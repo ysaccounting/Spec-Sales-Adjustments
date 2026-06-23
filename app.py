@@ -30,8 +30,8 @@ CRITERIA = [
     },
     {
         "id": 3,
-        "label": "GK LLC — Dodgers (Kramer)",
-        "description": "Company is GK LLC AND Performer/Team is Los Angeles Dodgers AND Account Email is YKRAMER@YSKG.NET",
+        "label": "GK LLC — Dodgers (Kramer), zero cost",
+        "description": "Company is GK LLC AND Performer/Team is Los Angeles Dodgers AND Account Email is YKRAMER@YSKG.NET AND Total Cost is $0",
     },
     {
         "id": 4,
@@ -88,7 +88,8 @@ def apply_filters(df: pd.DataFrame):
         2: (company == "ys katz") & _tag_contains(tags, "spec"),
         3: (company == "gk llc")
         & (team == "los angeles dodgers")
-        & (email == "ykramer@yskg.net"),
+        & (email == "ykramer@yskg.net")
+        & (total_cost == 0),
         4: company.isin(["ysa", "ysa 2", "ysa 3"])
         & _tag_contains(tags, "schmeck")
         & (total_cost == 0),
