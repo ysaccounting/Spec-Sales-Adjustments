@@ -43,6 +43,11 @@ CRITERIA = [
         "label": "YS TL — SPEC tag",
         "description": "Company is YS TL AND TextTags contains SPEC",
     },
+    {
+        "id": 6,
+        "label": "GK LLC — MLB All-Star events, zero cost",
+        "description": "Company is GK LLC AND Performer/Team is MLB All Star Weekend, MLB All-Star Game, or MLB Home Run Derby AND Total Cost is $0",
+    },
 ]
 
 REQUIRED_COLUMNS = ["Company", "Performer/Team", "Account Email", "TextTags", "Total Cost"]
@@ -88,6 +93,9 @@ def apply_filters(df: pd.DataFrame):
         & _tag_contains(tags, "schmeck")
         & (total_cost == 0),
         5: (company == "ys tl") & _tag_contains(tags, "spec"),
+        6: (company == "gk llc")
+        & team.isin(["mlb all star weekend", "mlb all-star game", "mlb home run derby"])
+        & (total_cost == 0),
     }
 
     counts = {rule_id: int(mask.sum()) for rule_id, mask in rules.items()}
