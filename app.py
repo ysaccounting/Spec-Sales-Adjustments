@@ -21,32 +21,36 @@ CRITERIA = [
     {
         "id": 1,
         "label": "YSM Tickets — MFG tag",
-        "description": "Company is YSM Tickets AND TextTags contains MFG",
+        "description": "TextTags contains MFG",
     },
     {
         "id": 2,
         "label": "YS Katz — SPEC tag",
-        "description": "Company is YS Katz AND TextTags contains SPEC",
+        "description": "TextTags contains SPEC",
     },
     {
         "id": 3,
-        "label": "GK LLC — Dodgers (Kramer), zero cost",
-        "description": "Company is GK LLC AND Performer/Team is Los Angeles Dodgers AND Account Email is YKRAMER@YSKG.NET AND Total Cost is $0",
+        "label": "GK LLC",
+        "sub_rules": [
+            {
+                "letter": "A",
+                "description": "Performer/Team is Los Angeles Dodgers AND Account Email is YKRAMER@YSKG.NET AND Total Cost is $0",
+            },
+            {
+                "letter": "B",
+                "description": "Performer/Team is MLB All Star Weekend, MLB All-Star Game, or MLB Home Run Derby AND Total Cost is $0",
+            },
+        ],
     },
     {
         "id": 4,
         "label": "YSA family — SCHMECK tag, zero cost",
-        "description": "Company is YSA, YSA 2, or YSA 3 AND TextTags contains SCHMECK AND Total Cost is $0",
+        "description": "TextTags contains SCHMECK AND Total Cost is $0",
     },
     {
         "id": 5,
         "label": "YS TL — SPEC tag",
-        "description": "Company is YS TL AND TextTags contains SPEC",
-    },
-    {
-        "id": 6,
-        "label": "GK LLC — MLB All-Star events, zero cost",
-        "description": "Company is GK LLC AND Performer/Team is MLB All Star Weekend, MLB All-Star Game, or MLB Home Run Derby AND Total Cost is $0",
+        "description": "TextTags contains SPEC",
     },
 ]
 
@@ -83,20 +87,28 @@ def apply_filters(df: pd.DataFrame):
     # Coerce Total Cost to numeric; non-numeric/blank → NaN (won't equal 0)
     total_cost = pd.to_numeric(df["Total Cost"], errors="coerce")
 
+    # Rule 3 is GK LLC with two sub-rules (A: Dodgers/Kramer; B: MLB All-Star events).
+    # Sub-rules combine with OR.
+    rule_3a = (
+        (company == "gk llc")
+        & (team == "los angeles dodgers")
+        & (email == "ykramer@yskg.net")
+        & (total_cost == 0)
+    )
+    rule_3b = (
+        (company == "gk llc")
+        & team.isin(["mlb all star weekend", "mlb all-star game", "mlb home run derby"])
+        & (total_cost == 0)
+    )
+
     rules = {
         1: (company == "ysm tickets") & _tag_contains(tags, "mfg"),
         2: (company == "ys katz") & _tag_contains(tags, "spec"),
-        3: (company == "gk llc")
-        & (team == "los angeles dodgers")
-        & (email == "ykramer@yskg.net")
-        & (total_cost == 0),
+        3: rule_3a | rule_3b,
         4: company.isin(["ysa", "ysa 2", "ysa 3"])
         & _tag_contains(tags, "schmeck")
         & (total_cost == 0),
         5: (company == "ys tl") & _tag_contains(tags, "spec"),
-        6: (company == "gk llc")
-        & team.isin(["mlb all star weekend", "mlb all-star game", "mlb home run derby"])
-        & (total_cost == 0),
     }
 
     counts = {rule_id: int(mask.sum()) for rule_id, mask in rules.items()}
@@ -203,12 +215,21 @@ def build_output_workbook(
         r = header_row + offset
         cs.cell(row=r, column=1, value=rule["id"]).alignment = Alignment(vertical="top")
         cs.cell(row=r, column=2, value=rule["label"]).alignment = Alignment(vertical="top")
-        cs.cell(row=r, column=3, value=rule["description"]).alignment = Alignment(
+        if rule.get("sub_rules"):
+            desc_text = "\n".join(
+                f'{sub["letter"]}. {sub["description"]}' for sub in rule["sub_rules"]
+            )
+        else:
+            desc_text = rule["description"]
+        cs.cell(row=r, column=3, value=desc_text).alignment = Alignment(
             vertical="top", wrap_text=True
         )
         cs.cell(row=r, column=4, value=counts.get(rule["id"], 0)).alignment = Alignment(
             vertical="top", horizontal="right"
         )
+        # Give sub-ruled rows extra height so both lines are visible
+        if rule.get("sub_rules"):
+            cs.row_dimensions[r].height = 15 * (len(rule["sub_rules"]) + 1) + 4
 
     total_row = header_row + len(CRITERIA) + 1
     cs.cell(row=total_row, column=2, value="Total rows kept").font = Font(bold=True)

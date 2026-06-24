@@ -190,6 +190,20 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px; color: var(--ink-2); line-height: 1.55;
   }
+  .sub-rule {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .sub-rule .sub-letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.55;
+  }
+  .sub-rule .desc { margin: 0; }
 
   footer { display: none; }
 
@@ -253,7 +267,16 @@
           <div class="num">{{ rule.id }}.</div>
           <div>
             <div class="label">{{ rule.label }}</div>
-            <div class="desc">{{ rule.description }}</div>
+            {% if rule.sub_rules %}
+              {% for sub in rule.sub_rules %}
+              <div class="sub-rule">
+                <span class="sub-letter">{{ sub.letter }}.</span>
+                <span class="desc">{{ sub.description }}</span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="desc">{{ rule.description }}</div>
+            {% endif %}
           </div>
         </div>
         {% endfor %}
