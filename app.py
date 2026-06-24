@@ -20,17 +20,17 @@ app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024  # 200 MB total across all 
 CRITERIA = [
     {
         "id": 1,
-        "label": "YSM Tickets",
+        "label": "Grossman (YSM)",
         "description": "TextTags contains MFG",
     },
     {
         "id": 2,
-        "label": "YS Katz",
+        "label": "Katz",
         "description": "TextTags contains SPEC",
     },
     {
         "id": 3,
-        "label": "GK LLC",
+        "label": "GK",
         "sub_rules": [
             {
                 "letter": "A",
@@ -49,7 +49,7 @@ CRITERIA = [
     },
     {
         "id": 5,
-        "label": "YS TL",
+        "label": "TL",
         "description": "TextTags contains SPEC",
     },
 ]
