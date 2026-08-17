@@ -52,6 +52,11 @@ CRITERIA = [
         "label": "TL",
         "description": "TextTags contains SPEC",
     },
+    {
+        "id": 6,
+        "label": "Levovitz",
+        "description": "TextTags contains SPEC",
+    },
 ]
 
 REQUIRED_COLUMNS = ["Company", "Performer/Team", "Account Email", "TextTags", "Total Cost"]
@@ -109,6 +114,7 @@ def apply_filters(df: pd.DataFrame):
         & _tag_contains(tags, "schmeck")
         & (total_cost == 0),
         5: (company == "ys tl") & _tag_contains(tags, "spec"),
+        6: (company == "levovitz") & _tag_contains(tags, "spec"),
     }
 
     counts = {rule_id: int(mask.sum()) for rule_id, mask in rules.items()}
